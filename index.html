@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Case study of the iProply website redesign: design system, before-and-after comparisons, new features and performance results.">
+<title>iProply Redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}
+/* Layout: one centred reading column; screenshots break out wider in browser frames; dark navy first, ivory in light. */
+:root{
+  --bg:#070d19; --surface:#0f1a2c; --surface-2:#14223a; --line:rgba(201,164,92,.2); --line-soft:rgba(244,239,227,.09);
+  --ink:#f7f2e7; --text:#d4cfc3; --muted:#9aa3b2;
+  --gold:#c9a45c; --gold-lt:#e6cf98; --gold-dk:#a8833f; --bad:#e08b7a; --good:#9cc28a;
+  --f-display:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+  --f-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --shadow:0 30px 70px rgba(0,0,0,.45);
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --bg:#f6f2ea; --surface:#ffffff; --surface-2:#fbf8f2; --line:rgba(168,131,63,.28); --line-soft:rgba(10,19,34,.08);
+  --ink:#0a1322; --text:#2b3140; --muted:#6c7079; --gold:#a8833f; --gold-lt:#8a6a2f; --gold-dk:#8a6a2f; --bad:#b04a36; --good:#4f7a3a;
+  --shadow:0 30px 70px rgba(10,19,34,.14); color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#f6f2ea; --surface:#ffffff; --surface-2:#fbf8f2; --line:rgba(168,131,63,.28); --line-soft:rgba(10,19,34,.08);
+  --ink:#0a1322; --text:#2b3140; --muted:#6c7079; --gold:#a8833f; --gold-lt:#8a6a2f; --gold-dk:#8a6a2f; --bad:#b04a36; --good:#4f7a3a;
+  --shadow:0 30px 70px rgba(10,19,34,.14); color-scheme:light}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:16px;line-height:1.7;font-variant-numeric:lining-nums;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto}
+.prose{max-width:680px}
+h1,h2,h3{font-family:var(--f-display);color:var(--ink);font-weight:500;line-height:1.05;margin:0;text-wrap:balance}
+h1{font-size:clamp(48px,8vw,104px);letter-spacing:-.01em}
+h1 em,h2 em{font-style:italic;color:var(--gold-lt)}
+h2{font-size:clamp(36px,5vw,58px)}
+h3{font-size:26px;font-weight:600}
+p{margin:0}
+a{color:var(--gold-lt)}
+.eyebrow{display:flex;align-items:center;gap:12px;font-size:11px;font-weight:600;letter-spacing:.26em;text-transform:uppercase;color:var(--gold)}
+.eyebrow:before{content:"";width:28px;height:1px;background:currentColor}
+section{padding-block:clamp(64px,9vw,120px);border-top:1px solid var(--line-soft)}
+.sec-head{display:grid;gap:18px;margin-bottom:44px}
+.lede{font-size:18px;color:var(--text);max-width:640px}
+.muted{color:var(--muted)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* Hero */
+.hero{padding-block:clamp(56px,9vw,110px) clamp(40px,6vw,72px);border-top:0}
+.hero .eyebrow{margin-bottom:26px}
+.hero .sub{margin-top:26px;font-size:clamp(17px,2vw,20px);max-width:620px}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;margin-top:44px;background:var(--line);border:1px solid var(--line)}
+.meta div{background:var(--bg);padding:16px 18px;min-width:0}
+.meta dt{font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+.meta dd{margin:6px 0 0;color:var(--ink);font-size:14px}
+.status{display:inline-flex;align-items:center;gap:8px}
+.status:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold)}
+
+/* Browser frame for screenshots */
+.shot{margin:0;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+.shot .bar{display:flex;align-items:center;gap:6px;height:30px;padding:0 12px;background:var(--surface-2);border-bottom:1px solid var(--line-soft)}
+.shot .bar i{width:8px;height:8px;border-radius:50%;background:var(--line-soft)}
+.shot .bar span{margin-left:10px;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shot img{display:block;width:100%;height:auto}
+figcaption{margin-top:12px;font-size:13px;color:var(--muted)}
+.hero-shot{margin-top:56px}
+
+/* Brief */
+.brief{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start}
+.brief ul{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.brief li{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:14px 0;border-bottom:1px solid var(--line-soft)}
+.brief li b{color:var(--ink);font-weight:600}
+.brief li:before{content:"";width:6px;height:6px;margin-top:10px;background:var(--bad);transform:rotate(45deg)}
+
+/* System */
+.system{display:grid;grid-template-columns:1.1fr .9fr;gap:40px}
+.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.sw{min-width:0}
+.sw .chip{aspect-ratio:1/1.15;max-width:100%;border:1px solid var(--line-soft);border-radius:2px}
+.sw b{display:block;margin-top:8px;font-size:12px;color:var(--ink);font-weight:600}
+.sw code{font-size:11px;color:var(--muted)}
+.type{border:1px solid var(--line);padding:28px;display:grid;gap:18px;background:var(--surface)}
+.type .big{font-family:var(--f-display);font-size:64px;line-height:1;color:var(--ink)}
+.type .big em{color:var(--gold-lt)}
+.type .row{display:flex;justify-content:space-between;gap:12px;font-size:12px;color:var(--muted);border-top:1px solid var(--line-soft);padding-top:12px}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:40px}
+.rules div{border-top:1px solid var(--gold);padding-top:16px}
+.rules h3{font-size:22px;margin-bottom:6px}
+.rules p{font-size:14px;color:var(--muted)}
+.btn-demo{display:inline-flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.btn-demo span{padding:11px 18px;border-radius:2px;font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase}
+.btn-demo .p{background:linear-gradient(135deg,#e6cf98,#c9a45c 45%,#a8833f);color:#070d19}
+.btn-demo .o{border:1px solid var(--line);color:var(--ink)}
+
+/* Compare slider */
+.compare{position:relative;user-select:none}
+.compare .stack{position:relative;display:grid}
+.compare .stack img{grid-area:1/1;display:block;width:100%;height:auto}
+.compare .after{clip-path:inset(0 0 0 var(--pos,50%))}
+.compare .handle{position:absolute;top:30px;bottom:0;left:var(--pos,50%);width:2px;background:var(--gold);pointer-events:none;transform:translateX(-1px)}
+.compare .handle:after{content:"◂ ▸";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:8px 10px;background:#0a1322;color:#e6cf98;border:1px solid #c9a45c;font-size:11px;letter-spacing:.1em;white-space:nowrap}
+.compare .tag{position:absolute;top:44px;padding:5px 10px;font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;background:rgba(7,13,25,.85);color:#f4efe3;border:1px solid rgba(201,164,92,.4)}
+.compare .tag.b{left:12px}.compare .tag.a{right:12px;color:#e6cf98}
+.compare input{position:absolute;inset:30px 0 0;width:100%;height:calc(100% - 30px);opacity:0;cursor:ew-resize;margin:0}
+.compare-grid{display:grid;gap:56px}
+.compare-note{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:18px;font-size:14px}
+.compare-note b{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px}
+.compare-note .b b{color:var(--bad)}.compare-note .a b{color:var(--gold)}
+
+/* Features */
+.feat{display:grid;grid-template-columns:.8fr 1.2fr;gap:48px;align-items:center;padding-block:40px}
+.feat+.feat{border-top:1px solid var(--line-soft)}
+.feat:nth-child(even){grid-template-columns:1.2fr .8fr}
+.feat:nth-child(even) .copy{order:2}
+.feat .copy{display:grid;gap:14px;min-width:0}
+.feat .k{font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+.feat ul{margin:4px 0 0;padding-left:18px;font-size:14px;color:var(--muted)}
+.feat li{margin:4px 0}
+
+/* Honesty table */
+.tbl{overflow-x:auto;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:640px}
+th{text-align:left;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);background:var(--surface-2);padding:14px 16px;font-weight:600}
+td{padding:14px 16px;border-top:1px solid var(--line-soft);vertical-align:top}
+td:nth-child(2){color:var(--bad);text-decoration:line-through;text-decoration-color:rgba(224,139,122,.5)}
+td:nth-child(3){color:var(--ink)}
+
+/* Performance */
+.perf{display:grid;gap:22px}
+.pr{display:grid;grid-template-columns:220px 1fr 150px;gap:18px;align-items:center}
+.pr .name{color:var(--ink);font-size:14px;min-width:0}
+.pr .track{position:relative;height:26px;background:var(--surface-2);border:1px solid var(--line-soft)}
+.pr .before{position:absolute;inset:0 auto 0 0;background:repeating-linear-gradient(135deg,rgba(224,139,122,.28) 0 6px,rgba(224,139,122,.14) 6px 12px)}
+.pr .after{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#a8833f,#e6cf98);min-width:3px}
+.pr .nums{font-size:13px;font-variant-numeric:tabular-nums;text-align:right;color:var(--muted)}
+.pr .nums b{color:var(--ink);font-weight:600}
+.legend{display:flex;gap:22px;font-size:12px;color:var(--muted);margin-top:6px}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{width:16px;height:10px;display:inline-block}
+.legend .lb{background:rgba(224,139,122,.3)}.legend .la{background:var(--gold)}
+
+/* Coverage */
+.cover{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.cover div{background:var(--bg);padding:26px;min-width:0}
+.cover strong{display:block;font-family:var(--f-display);font-size:46px;line-height:1;color:var(--gold-lt);font-weight:500}
+.cover span{display:block;margin-top:10px;font-size:13px;color:var(--muted)}
+.pages{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+.pages span{padding:6px 12px;border:1px solid var(--line);font-size:12px;color:var(--text)}
+
+.dual{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+
+footer{padding-block:56px 72px;border-top:1px solid var(--line-soft);display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+footer .sig{font-family:var(--f-display);font-size:28px;color:var(--ink)}
+
+@media (max-width:860px){
+  .brief,.system,.feat,.feat:nth-child(even),.dual,.compare-note{grid-template-columns:1fr}
+  .feat:nth-child(even) .copy{order:0}
+  .rules,.cover{grid-template-columns:1fr}
+  .pr{grid-template-columns:1fr;gap:8px}
+  .pr .nums{text-align:left}
+}
+@media (max-width:480px){.swatches{grid-template-columns:repeat(2,1fr)}.type .big{font-size:48px}}
+@media (prefers-reduced-motion:no-preference){
+  .hero h1,.hero .sub,.hero .meta{animation:rise .9s cubic-bezier(.2,.7,.2,1) both}
+  .hero .sub{animation-delay:.12s}.hero .meta{animation-delay:.24s}
+  @keyframes rise{from{transform:translateY(14px)}to{transform:none}}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="hero">
+  <p class="eyebrow">Case study · Website redesign</p>
+  <h1>iProply,<br><em>re-set in navy &amp; gold.</em></h1>
+  <p class="sub">A full visual and product refresh of iProply, a real estate growth platform that connects agents with buyers and sellers in the areas they serve. The work covered the public site, sign-in pages, and the admin and agent dashboards, plus four new features.</p>
+  <dl class="meta">
+    <div><dt>Client</dt><dd>iProply</dd></div>
+    <div><dt>Role</dt><dd>Design &amp; front-end development</dd></div>
+    <div><dt>Stack</dt><dd>PHP · MySQL · vanilla JS · Leaflet</dd></div>
+    <div><dt>Timeline</dt><dd>October 2026</dd></div>
+    <div><dt>Status</dt><dd class="status">Staged on a branch, awaiting launch</dd></div>
+  </dl>
+  <figure class="shot hero-shot">
+    <div class="bar"><i></i><i></i><i></i><span>iproply.com</span></div>
+    <img src="img/home.webp" alt="iProply homepage: a lit modern house at dusk behind the headline 'A place to live. A place to belong.' and a search card" width="1200" height="667">
+  </figure>
+</header>
+
+<section>
+  <div class="brief">
+    <div class="sec-head" style="margin:0">
+      <p class="eyebrow">The brief</p>
+      <h2>Make it look like the <em>premium</em> product it claims to be.</h2>
+      <p class="lede">The platform worked, but the site undercut it. Each page had its own style, the colors were loud, and some of the most visible numbers had no data behind them.</p>
+    </div>
+    <ul>
+      <li><span><b>No single look.</b> Bright amber yellow, Bootstrap blue and rounded pills sat side by side, and the chat bubble was a stock blue circle.</span></li>
+      <li><span><b>Claims without data.</b> "171.5 Million+ buyers", "98% satisfaction" and hard-coded "+16%" trend badges on the dashboard.</span></li>
+      <li><span><b>Agent blurbs shown as reviews.</b> "Affiliated with X. Serves: Y" appeared as five-star customer testimonials.</span></li>
+      <li><span><b>Broken pieces.</b> The Reviews page was blank, blog sidebar images were broken, and registration said "4 steps" for a 3-step form.</span></li>
+      <li><span><b>Heavy pages.</b> The Contact hero image alone was 19.6 MB.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <p class="eyebrow">Design system</p>
+    <h2>One palette, two typefaces, <em>sharp corners.</em></h2>
+    <p class="lede">Every page now draws from the same small set of choices. Deep navy for depth, champagne gold used sparingly for what matters, and ivory text that stays calm at night.</p>
+  </div>
+  <div class="system">
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#070d19"></div><b>Midnight</b><code>#070D19</code></div>
+      <div class="sw"><div class="chip" style="background:#17233a"></div><b>Harbor</b><code>#17233A</code></div>
+      <div class="sw"><div class="chip" style="background:#c9a45c"></div><b>Champagne</b><code>#C9A45C</code></div>
+      <div class="sw"><div class="chip" style="background:#f7f2e7"></div><b>Ivory</b><code>#F7F2E7</code></div>
+    </div>
+    <div class="type">
+      <div class="big">Aa <em>Aa</em></div>
+      <div class="row"><span>Cormorant Garamond</span><span>Headlines, prices, numbers</span></div>
+      <div style="font-size:18px;color:var(--ink)">Inter carries everything you read and tap.</div>
+      <div class="row"><span>Inter</span><span>Body, labels, buttons</span></div>
+      <div class="btn-demo" aria-hidden="true"><span class="p">Find a home</span><span class="o">Talk to an agent</span></div>
+    </div>
+  </div>
+  <div class="rules">
+    <div><h3>2px and 4px</h3><p>Buttons have 2px corners and cards 4px. The old pills and 28px bubbles are gone, which reads as more architectural.</p></div>
+    <div><h3>Gold means action</h3><p>Gold marks the primary button, the active state and key figures. Everything else stays navy or ivory.</p></div>
+    <div><h3>Serif for numbers</h3><p>Prices and stats are set in Cormorant with lining figures, so "$1,791/mo" feels like a listing, not a spreadsheet.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <p class="eyebrow">Before &amp; after</p>
+    <h2>Drag to <em>compare.</em></h2>
+  </div>
+  <div class="compare-grid">
+    <figure style="margin:0">
+      <div class="shot compare" style="--pos:50%">
+        <div class="bar"><i></i><i></i><i></i><span>Admin · Command Center</span></div>
+        <div class="stack">
+          <img src="img/admin-before.webp" alt="Admin dashboard before: bright yellow icons, rounded cards and trend badges such as +16%" width="1200" height="833">
+          <img class="after" src="img/admin-after.webp" alt="Admin dashboard after: navy sidebar, serif figures, square cards and no invented trend badges" width="1200" height="833">
+        </div>
+        <span class="tag b">Before</span><span class="tag a">After</span>
+        <span class="handle" aria-hidden="true"></span>
+        <input type="range" id="cmp-admin" min="0" max="100" value="50" aria-label="Before and after divider for the admin dashboard">
+      </div>
+      <div class="compare-note"><p class="b"><b>Before</b>Saturated yellow, hard-coded "+16%" trends and decorative bar charts that weren't data.</p><p class="a"><b>After</b>The same layout, quieter and honest: real counts, and revenue labelled as an estimate with its formula.</p></div>
+    </figure>
+    <figure style="margin:0">
+      <div class="shot compare" style="--pos:50%">
+        <div class="bar"><i></i><i></i><i></i><span>iproply.com/partnership-program</span></div>
+        <div class="stack">
+          <img src="img/partner-before.webp" alt="Partnership page before: amber headings, pill buttons and the whole page in a serif" width="1200" height="833">
+          <img class="after" src="img/partner-after.webp" alt="Partnership page after: champagne italic headline, square gold buttons and Inter body text" width="1200" height="833">
+        </div>
+        <span class="tag b">Before</span><span class="tag a">After</span>
+        <span class="handle" aria-hidden="true"></span>
+        <input type="range" id="cmp-partner" min="0" max="100" value="50" aria-label="Before and after divider for the partnership page">
+      </div>
+      <div class="compare-note"><p class="b"><b>Before</b>Amber yellow, pill buttons and body copy set in a display serif.</p><p class="a"><b>After</b>Champagne gold, square buttons and Inter for reading. The copy is rewritten around what iProply actually offers.</p></div>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <p class="eyebrow">New features</p>
+    <h2>Built for people <em>actually house-hunting.</em></h2>
+  </div>
+
+  <div class="feats">
+    <div class="feat">
+      <div class="copy">
+        <p class="k">Listings</p>
+        <h3>Map search</h3>
+        <p>Results sit beside a live map. Every match gets a navy price pin, and nearby homes group into numbered clusters.</p>
+        <ul><li>Click a pin for a mini card with photo and price</li><li>Hover a card and its pin lights up gold</li><li>"Search this area" reruns the search after you pan</li></ul>
+      </div>
+      <figure class="shot"><div class="bar"><i></i><i></i><i></i><span>Listings · Map view</span></div><img src="img/map.webp" alt="Listings page with property cards on the left and a map with gold-bordered price pins and numbered clusters on the right" width="1200" height="750" loading="lazy"></figure>
+    </div>
+
+    <div class="feat">
+      <div class="copy">
+        <p class="k">Property detail</p>
+        <h3>Monthly payment estimate</h3>
+        <p>Sliders for down payment and rate, plus a 15/20/30-year switch. The total updates live with a breakdown of principal, tax, insurance and HOA.</p>
+        <ul><li>Same amortisation formula as the full calculator</li><li>"Ask about financing" goes straight to the agent</li></ul>
+      </div>
+      <figure class="shot"><div class="bar"><i></i><i></i><i></i><span>Property · Payment estimate</span></div><img src="img/calc.webp" alt="Payment estimate panel showing $1,791 per month with sliders for down payment and interest rate" width="1200" height="667" loading="lazy"></figure>
+    </div>
+
+    <div class="feat">
+      <div class="copy">
+        <p class="k">Engagement</p>
+        <h3>Saved homes</h3>
+        <p>A heart on every listing, a counter in the header, and a shortlist page. It works without an account.</p>
+        <ul><li>"Ask an agent about these" opens a pre-filled inquiry</li><li>A browser becomes a qualified lead</li></ul>
+      </div>
+      <figure class="shot"><div class="bar"><i></i><i></i><i></i><span>iproply.com/saved</span></div><img src="img/saved.webp" alt="Saved Homes page with a count of two homes and an 'Ask an agent about these' button" width="1200" height="667" loading="lazy"></figure>
+    </div>
+
+    <div class="feat">
+      <div class="copy">
+        <p class="k">Comfort</p>
+        <h3>Dark mode</h3>
+        <p>A moon button switches the whole site to deep navy with ivory text. The choice is remembered and applied before the page paints, so there is no white flash.</p>
+        <ul><li>Map tiles, chat widget and forms follow along</li><li>A contrast audit over 32 pages found 0 unreadable text items</li></ul>
+      </div>
+      <figure class="shot"><div class="bar"><i></i><i></i><i></i><span>iproply.com · Dark</span></div><img src="img/home-dark.webp" alt="Homepage in dark mode: dark search card and navy property cards with gold hearts" width="1200" height="1300" loading="lazy"></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <p class="eyebrow">Every surface</p>
+    <h2>Sign-in to dashboard, <em>one language.</em></h2>
+    <p class="lede">The redesign didn't stop at the marketing pages. Agents and admins see the same system from the moment they sign in.</p>
+  </div>
+  <div class="dual">
+    <figure class="shot" style="margin:0"><div class="bar"><i></i><i></i><i></i><span>Agent sign-in</span></div><img src="img/login.webp" alt="Agent sign-in page with a photo panel on the left and an ivory form with a gold sign-in button" width="1200" height="675" loading="lazy"></figure>
+    <figure class="shot" style="margin:0"><div class="bar"><i></i><i></i><i></i><span>Agent dashboard</span></div><img src="img/agent.webp" alt="Agent dashboard with navy sidebar and serif metric cards" width="1200" height="833" loading="lazy"></figure>
+    <figure class="shot" style="margin:0"><div class="bar"><i></i><i></i><i></i><span>Navigation · Agents menu</span></div><img src="img/nav.webp" alt="Header with the Agents dropdown open, showing a 'For agents' group" width="1200" height="527" loading="lazy"></figure>
+    <figure class="shot" style="margin:0"><div class="bar"><i></i><i></i><i></i><span>Chat widget</span></div><img src="img/chat.webp" alt="Chat window with navy header, cream message bubble and gold send button" width="1200" height="750" loading="lazy"></figure>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <p class="eyebrow">Honesty pass</p>
+    <h2>Removing what <em>couldn't be backed up.</em></h2>
+    <p class="lede">A premium brand loses trust fastest when a visitor checks a number and it doesn't hold. Every claim on the site was traced to its source, and anything invented was replaced.</p>
+  </div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Where</th><th>Was</th><th>Now</th></tr></thead>
+      <tbody>
+        <tr><td>Partnership hero</td><td>171.5 Million+ buyers · 98% satisfaction</td><td>Exclusive areas · Direct leads · Simple management · $0 referral fees</td></tr>
+        <tr><td>Listings hero</td><td>1000+ results · 99+ states</td><td>The real counts from the database</td></tr>
+        <tr><td>Agent sign-in</td><td>12K+ agents · $2.4B tracked</td><td>What the portal gives agents</td></tr>
+        <tr><td>Admin dashboard</td><td>+16% / +9% / +21% trend badges</td><td>Removed; revenue labelled as an estimate</td></tr>
+        <tr><td>Agent dashboard</td><td>"1h 12m" response time (fixed text)</td><td>Removed; appointments counted from real bookings</td></tr>
+        <tr><td>Reviews &amp; testimonials</td><td>Agent profile blurbs shown as 5-star reviews</td><td>Client reviews only, and agents shown as agents</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <p class="eyebrow">Performance</p>
+    <h2>Same images, <em>a fraction of the weight.</em></h2>
+    <p class="lede">The largest files were re-encoded as WebP at the size they're displayed, and card photos now load only when scrolled into view. The homepage dropped from about 3.2 MB to 1.8 MB.</p>
+  </div>
+  <div class="perf">
+    <div class="pr"><span class="name">Contact page hero</span><span class="track"><span class="before" style="width:100%"></span><span class="after" style="width:1.35%"></span></span><span class="nums"><b>264 KB</b> · was 19.6 MB</span></div>
+    <div class="pr"><span class="name">Partner logos (two)</span><span class="track"><span class="before" style="width:100%"></span><span class="after" style="width:3.1%"></span></span><span class="nums"><b>228 KB</b> · was 7.3 MB</span></div>
+    <div class="pr"><span class="name">Homepage photos (three)</span><span class="track"><span class="before" style="width:100%"></span><span class="after" style="width:12.4%"></span></span><span class="nums"><b>267 KB</b> · was 2.1 MB</span></div>
+    <div class="pr"><span class="name">Logo on every page</span><span class="track"><span class="before" style="width:100%"></span><span class="after" style="width:17.3%"></span></span><span class="nums"><b>72 KB</b> · was 417 KB</span></div>
+    <div class="pr"><span class="name">Whole homepage</span><span class="track"><span class="before" style="width:100%"></span><span class="after" style="width:56%"></span></span><span class="nums"><b>1.8 MB</b> · was 3.2 MB</span></div>
+    <div class="legend"><span><i class="lb"></i>Before (each bar is its own 100%)</span><span><i class="la"></i>After</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <p class="eyebrow">Scope &amp; checks</p>
+    <h2>Tested where <em>people browse.</em></h2>
+  </div>
+  <div class="cover">
+    <div><strong>40+</strong><span>Pages restyled across the public site, sign-in flows, admin and agent dashboards</span></div>
+    <div><strong>390 to 1920</strong><span>Pixel widths checked for overflow, from a phone to a wide desktop</span></div>
+    <div><strong>0</strong><span>Unreadable text items in dark mode, across a 32-page contrast audit</span></div>
+  </div>
+  <div class="pages" aria-label="Pages covered">
+    <span>Home</span><span>Listings</span><span>Property detail</span><span>Saved homes</span><span>Reviews</span><span>Blog</span><span>Agents</span><span>Contact</span><span>Partnership Program</span><span>Header &amp; footer</span><span>Agent &amp; admin sign-in</span><span>Registration</span><span>Admin dashboard</span><span>Agent dashboard</span><span>CRM pages</span><span>Chat widget</span>
+  </div>
+</section>
+
+<footer>
+  <div><div class="sig">Aesyrix</div><div>Design &amp; front-end development</div></div>
+  <div style="text-align:right">iProply website redesign<br>October 2026</div>
+</footer>
+
+</div>
+
+<script>
+document.querySelectorAll('.compare').forEach(function (box) {
+  var input = box.querySelector('input[type=range]');
+  function set() { box.style.setProperty('--pos', input.value + '%'); }
+  input.addEventListener('input', set);
+  set();
+});
+</script>
+</body>
+</html>
